@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import chunk from 'lodash/chunk';
 import './index.css';
 
 class Game extends React.Component {
@@ -8,6 +9,8 @@ class Game extends React.Component {
         this.state = {
           history: [{
             squares: Array(9).fill(null),
+            x: null,
+            y: null
           }],
           xIsNext: true,
           stepNumber: 0
@@ -18,13 +21,29 @@ class Game extends React.Component {
         const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length - 1];
         const squares = current.squares.slice();
+        console.log(i);
         if (calculateWinner(squares) || squares[i]) {
             return;
+        }
+        let x, y;
+        if([0, 1, 2].includes(i)){
+            x = 1;
+            y = (i == 0) ? 1 : (i == 1) ? 2 : 3;
+        }
+        else if([3, 4, 5].includes(i)){
+            x = 2;
+            y = (i == 3) ? 1 : (i == 4) ? 2 : 3;
+        }
+        else{
+            x = 3;
+            y = (i == 6) ? 1 : (i == 7) ? 2 : 3;
         }
         squares[i] = this.state.xIsNext ? 'x' : 'o';
         this.setState({
             history: history.concat([{
-                squares: squares
+                squares: squares,
+                x: x,
+                y: y
             }]),
             xIsNext: !this.state.xIsNext,
             stepNumber: history.length
@@ -41,14 +60,28 @@ class Game extends React.Component {
         const history = this.state.history;
         const current = history[this.state.stepNumber];
         const winner = calculateWinner(current.squares);
+        let styles = {
+            fontWeight:'bold'
+        };
 
         const moves = history.map((step, move) => {
-            const desc = move ? 'Go to move #' + move : 'Go to game start';
-            return (
-                <li key={move}>
-                    <button onClick={() => this.jumpTo(move)}>{desc}</button>
-                </li>
-            );
+            const loc = '('+step.x+', '+step.y+')';
+            const desc = move ? 'Go to move #' + move + ' at ' + loc: 'Go to game start';
+            if(move != this.state.stepNumber){
+                return (
+                    <li key={move}>
+                        <button onClick={() => this.jumpTo(move)}>{desc}</button>
+                    </li>
+                );
+            }
+            else{
+                return (
+                    <li key={move}>
+                        <button style={styles} onClick={() => this.jumpTo(move)}>{desc}</button>
+                    </li>
+                );
+            }
+            
         });
         const status = winner ? 'Winner: ' + winner : 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
 
@@ -61,15 +94,14 @@ class Game extends React.Component {
                     <div>{status}</div>
                     <ol>{moves}</ol>
                 </div>
+                <div>{this.state.stepNumber}</div>
+                <div>{this.state.history.squares}</div>
             </div>
         );
     }
 }
 
 class Board extends React.Component {
-
-    
-
     renderSquare = (i) => {
         return <Square value={this.props.squares[i]} onClick={() => this.props.onClick(i)} />;
     };
@@ -77,25 +109,17 @@ class Board extends React.Component {
     render() {
         return (
             <div>
-               
-                <div className='board-row'>
-                    {this.renderSquare(0)}
-                    {this.renderSquare(1)}
-                    {this.renderSquare(2)}
-                </div>
-                <div className='board-row'>
-                    {this.renderSquare(3)}
-                    {this.renderSquare(4)}
-                    {this.renderSquare(5)}
-                </div>
-                <div className='board-row'>
-                    {this.renderSquare(6)}
-                    {this.renderSquare(7)}
-                    {this.renderSquare(8)}
-                </div>
+                {chunk(new Array(9).fill(null), 3).map((item, itemIndex) => {
+                    return (
+                        <div key={itemIndex} className='board-row'>
+                            {item.map((col, index) => <Square key={itemIndex+index} value={this.props.squares[(3*itemIndex) + index]} onClick={() => this.props.onClick((3*itemIndex) + index)} />)}
+                        </div>
+                    )
+                })}
             </div>
-
         )
+        
+
     }
 }
 
