@@ -59,11 +59,9 @@ class Game extends React.Component {
 
     sortMoves = () => {
         let sortOrder = !this.state.sortAscending;
-
-
         this.setState({
             sortAscending: sortOrder
-        })
+        });
     };
 
     render() {
@@ -96,12 +94,12 @@ class Game extends React.Component {
         if(!this.state.sortAscending){
             moves = moves.reverse();
         }
-        const status = winner ? 'Winner: ' + winner : 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+        const status = winner ? 'Winner: ' + winner.winner : 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
 
         return (
             <div className='game'>
                 <div className='game-board'>
-                    <Board squares={current.squares} onClick={(i) => this.handleClick(i)} />
+                    <Board squares={current.squares} winner={winner} onClick={(i) => this.handleClick(i)} />
                 </div>
                 <div className='game-info'>
                     <div>{status}</div>
@@ -125,7 +123,9 @@ class SortButton extends React.Component {
 }
 
 class Board extends React.Component {
+
     renderSquare = (i) => {
+
         return <Square value={this.props.squares[i]} onClick={() => this.props.onClick(i)} />;
     };
 
@@ -135,7 +135,7 @@ class Board extends React.Component {
                 {chunk(new Array(9).fill(null), 3).map((item, itemIndex) => {
                     return (
                         <div key={itemIndex} className='board-row'>
-                            {item.map((col, index) => <Square key={itemIndex+index} value={this.props.squares[(3*itemIndex) + index]} onClick={() => this.props.onClick((3*itemIndex) + index)} />)}
+                            {item.map((col, index) => <Square num={(3*itemIndex)+index} key={(3*itemIndex)+index} value={this.props.squares[(3*itemIndex) + index]} onClick={() => this.props.onClick((3*itemIndex) + index)} winner={this.props.winner}/>)}
                         </div>
                     )
                 })}
@@ -147,7 +147,18 @@ class Board extends React.Component {
 }
 
 function Square(props) {
+    let styles = {
+        backgroundColor: 'yellow'
+    };
+    if(props.winner && props.winner.boxes.includes(props.num)){
+        return (
+            <button className='square' style={styles} onClick={props.onClick}>
+                {props.value}
+            </button>
+        )
+    }
     return (
+
         <button className='square' onClick={props.onClick}>
             {props.value}
         </button>
@@ -168,7 +179,10 @@ function calculateWinner(squares) {
     for (let i = 0; i < lines.length; i++) {
       const [a, b, c] = lines[i];
       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a];
+        return {
+            winner: squares[a],
+            boxes: lines[i]
+        }
       }
     }
     return null;
