@@ -94,7 +94,7 @@ class Game extends React.Component {
         if(!this.state.sortAscending){
             moves = moves.reverse();
         }
-        const status = winner ? 'Winner: ' + winner.winner : 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+        const status = winner ? 'Winner: ' + winner.winner : this.state.stepNumber == 9 ? 'Game is a draw' : 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
 
         return (
             <div className='game'>
