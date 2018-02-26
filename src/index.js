@@ -13,7 +13,8 @@ class Game extends React.Component {
             y: null
           }],
           xIsNext: true,
-          stepNumber: 0
+          stepNumber: 0,
+          sortAscending: true
         };
     }
 
@@ -56,6 +57,15 @@ class Game extends React.Component {
         });
     };
 
+    sortMoves = () => {
+        let sortOrder = !this.state.sortAscending;
+
+
+        this.setState({
+            sortAscending: sortOrder
+        })
+    };
+
     render() {
         const history = this.state.history;
         const current = history[this.state.stepNumber];
@@ -64,7 +74,7 @@ class Game extends React.Component {
             fontWeight:'bold'
         };
 
-        const moves = history.map((step, move) => {
+        let moves = history.map((step, move) => {
             const loc = '('+step.x+', '+step.y+')';
             const desc = move ? 'Go to move #' + move + ' at ' + loc: 'Go to game start';
             if(move != this.state.stepNumber){
@@ -83,6 +93,9 @@ class Game extends React.Component {
             }
             
         });
+        if(!this.state.sortAscending){
+            moves = moves.reverse();
+        }
         const status = winner ? 'Winner: ' + winner : 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
 
         return (
@@ -94,10 +107,20 @@ class Game extends React.Component {
                     <div>{status}</div>
                     <ol>{moves}</ol>
                 </div>
-                <div>{this.state.stepNumber}</div>
-                <div>{this.state.history.squares}</div>
+                <SortButton onClick={() => this.sortMoves()} sortAscending={this.state.sortAscending} />
             </div>
         );
+    }
+}
+
+class SortButton extends React.Component {
+    render() {
+        const text = this.props.sortAscending ? 'Sort Descending' : 'Sort Ascending';
+        return (
+            <div>
+                <button onClick={() => this.props.onClick()}>{text}</button> 
+            </div>
+        )
     }
 }
 
